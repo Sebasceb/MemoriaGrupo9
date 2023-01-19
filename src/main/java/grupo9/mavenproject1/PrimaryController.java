@@ -7,6 +7,7 @@ import java.io.IOException;
 import static java.lang.Math.random;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -28,25 +29,32 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import java.util.Random;
 
-public class PrimaryController {
+public class PrimaryController implements Initializable{
     private ArrayList<Integer> codigos;
     private ArrayList<int[]> posiciones;
+    private ArrayList<Tarjetas> listaTarjetas;
    
     @FXML
     private FlowPane panelJugador;
     @FXML
     private GridPane tarjetasPane;
     
-    int columnas= tarjetasPane.getColumnCount();
-    int filas= tarjetasPane.getRowCount();
+    int columnas= 6;
+    int filas= 4;
     
+    private Tarjetas selected1=null;
+    private Tarjetas selected2=null;
     
-    
-    
-    public void initialize(){
+    public void initialize(URL url, ResourceBundle rb){
+        codigos=new ArrayList();
+        posiciones=new ArrayList();
+        listaTarjetas=new ArrayList();
+        System.out.println("Hello World");
+        Runnable task2 = () -> { llenarGridPane(); };
+        new Thread(task2).start();
         
     }
-    /*
+   /*
     public void llenarFlowPane(int cant){
         GridPane gridPane = new GridPane();
         codigos.clear();
@@ -105,7 +113,8 @@ public class PrimaryController {
             
             Tarjetas btn1= new Tarjetas(codigo);
             Tarjetas btn2= new Tarjetas(codigo);
-            
+            listaTarjetas.add(btn1);
+            listaTarjetas.add(btn2);
             tarjetasPane.add(btn1,posi1[0],posi1[1]);
             tarjetasPane.add(btn2,posi2[0],posi2[1]);
             
@@ -116,8 +125,10 @@ public class PrimaryController {
     }
     
     public void limpiaListas(){
-        codigos.clear();
-        posiciones.clear();
+        if(codigos!=null)
+            codigos.clear();
+        if(posiciones!=null)
+            posiciones.clear();
         
         for(int i=0; i<(columnas*filas/2); i++){
             codigos.add(i);
@@ -126,12 +137,24 @@ public class PrimaryController {
             for(int f=0; f<filas; f++){
                 int[] posi={c,f};
                 posiciones.add(posi);
-            
             }
-
         }
         
-    }
+        Collections.shuffle(codigos);
+        Collections.shuffle(posiciones);
+        
+    } 
+    /*
+    public void verificador(Tarjetas t){
+        if(selected1==null){
+            selected1=t;
+        }else{
+            selected2=t;
+            if(selected1.equals(selected2)){
+                
+            }
+        }
+    }*/
     
 }
 

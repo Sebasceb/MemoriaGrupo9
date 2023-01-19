@@ -31,6 +31,15 @@ public final class Tarjetas extends Button {
         this.setOnAction(eh -> manejaBoton());
     }
 
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Estado estado) {
+        this.estado = estado;
+    }
+    
+
     public String getRuta() {
         return ruta;
     }
@@ -74,14 +83,28 @@ public final class Tarjetas extends Button {
     public void manejaBoton(){
         if(this.estado==Estado.OUT)
             return;
-        if(this.estado==Estado.OFF){
+        if(this.estado==Estado.OFF)
             this.bocaArriba();
-        }
-        //if(this.estado==Estado.ON){
-            //this.bocaAbajo();
-        //}
-        
-        
+        if(this.estado==Estado.ON)
+            return;          
     }
+    /*
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Tarjetas other = (Tarjetas) obj;
+        if (this.codigo != other.codigo) {
+            return false;
+        }
+        return true;
+    }*/
    
 }

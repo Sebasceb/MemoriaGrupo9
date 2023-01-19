@@ -106,10 +106,10 @@ public class PrimaryController implements Initializable{
         int[]posi =tDelete.getPosicion();
         listaTarjetas.remove(tDelete);
         listaTarjetas.add(tAdd);
+        tAdd.bocaAbajo();
         tarjetasPane.getChildren().remove(tDelete);
         tarjetasPane.add(tAdd, posi[0], posi[1]);
-        
-        
+       
     }
     /*
     public void reLlenarGridPane(){
@@ -201,19 +201,12 @@ public class PrimaryController implements Initializable{
         }
 
         public void manejaBoton(){
-            if(this.estado==Estado.OUT)
-                return;
+        
             if(this.estado==Estado.OFF){
                 this.bocaArriba();
                 this.verificador();
-            }
-
-            if(this.estado==Estado.ON)
-                return;    
-
-            if(PrimaryController.selected1 !=null || PrimaryController.selected2 !=null){
-                this.verificador();
-            }
+            }else
+                return;
         }
 
         public void verificador(){
@@ -232,9 +225,20 @@ public class PrimaryController implements Initializable{
                             actualizarTarjetas(selected2,carta);
                         }  
                     }
+                }else{
+                    for(Tarjetas carta: PrimaryController.listaTarjetas){
+                        if(selected1.equals(carta)){
+                            selected1.bocaAbajo();
+                            actualizarTarjetas(selected1,carta);
+                            selected1=null;
+                        }
+                        if(selected2.equals(carta)){
+                            selected2.bocaAbajo();
+                            actualizarTarjetas(selected2,carta);
+                            selected2=null;
+                        }  
+                    }
                 }
-                selected1=null;
-                selected2=null; 
             }
         }
         /*

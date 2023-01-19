@@ -97,6 +97,23 @@ public class PrimaryController implements Initializable{
         limpiaListas();
         Random random = new Random();
         
+        for(int c:codigos){
+            
+            Tarjetas btn1= new Tarjetas(c);
+            listaTarjetas.add(btn1);
+            Tarjetas btn2= new Tarjetas(c);
+            listaTarjetas.add(btn2);
+          
+        }
+        Collections.shuffle(listaTarjetas);
+        
+        for(int i=0;i<posiciones.size(); i++){
+           int[] posi=posiciones.get(i);
+           tarjetasPane.add(listaTarjetas.get(i),posi[0],posi[1]);
+            
+        }
+        
+        /*
         while(!codigos.isEmpty()){
             
             int indexC= random.nextInt(codigos.size());
@@ -118,7 +135,13 @@ public class PrimaryController implements Initializable{
             tarjetasPane.add(btn1,posi1[0],posi1[1]);
             tarjetasPane.add(btn2,posi2[0],posi2[1]);
             
-        }
+            Platform.runLater(new Runnable() {
+            @Override public void run() {
+                
+            }
+            });
+            
+        }*/
         
         
         

@@ -1,6 +1,5 @@
 package grupo9.mavenproject1;
 
-import grupo9.modelo.*;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,20 +29,19 @@ import javafx.scene.layout.VBox;
 import java.util.Random;
 
 public class PrimaryController implements Initializable{
-    private ArrayList<Integer> codigos;
-    private ArrayList<int[]> posiciones;
-    private ArrayList<Tarjetas> listaTarjetas;
+    public static ArrayList<Integer> codigos;
+    public static ArrayList<int[]> posiciones;
+    public static ArrayList<Tarjetas> listaTarjetas;
    
-    @FXML
-    private FlowPane panelJugador;
+    
     @FXML
     private GridPane tarjetasPane;
     
     int columnas= 6;
     int filas= 4;
     
-    private Tarjetas selected1=null;
-    private Tarjetas selected2=null;
+    public static Tarjetas selected1=null;
+    public static Tarjetas selected2=null;
     
     public void initialize(URL url, ResourceBundle rb){
         codigos=new ArrayList();
@@ -54,42 +52,7 @@ public class PrimaryController implements Initializable{
         new Thread(task2).start();
         
     }
-   /*
-    public void llenarFlowPane(int cant){
-        GridPane gridPane = new GridPane();
-        codigos.clear();
-        posiciones.clear();
-        
-        
-        
-        int cantCodes=(cant*cant)/2;
-        for(int i=0; i<cantCodes;i++){
-            Random random = new Random();
-            int codigo= random.nextInt();
-            codigos.add(codigo);
-        }
-        
-        for(int i=0; i<cant;i++){
-           ColumnConstraints col= new ColumnConstraints();
-           RowConstraints row = new RowConstraints();
-           gridPane.getColumnConstraints().add(col);
-           gridPane.getRowConstraints().add(row);
-           
-        }
-        
-        for(int i=0; i<cant;i++){
-            for(int a=0;a<cant;a++){
-                Button tarjeta= new Button();
-                gridPane.add(tarjeta, i, a);
-                int[] posicion={i,a};
-                posiciones.add(posicion);
-            }
-           
-        }
-        panelJugador.getChildren().add(gridPane);
-        
-        
-    }*/
+   
     
     public void llenarGridPane(){
         
@@ -109,42 +72,11 @@ public class PrimaryController implements Initializable{
         
         for(int i=0;i<posiciones.size(); i++){
            int[] posi=posiciones.get(i);
-           tarjetasPane.add(listaTarjetas.get(i),posi[0],posi[1]);
+           Tarjetas tarjeta=listaTarjetas.get(i);
+           tarjeta.setPosicion(posi);
+           tarjetasPane.add(tarjeta,posi[0],posi[1]);
             
-        }
-        
-        /*
-        while(!codigos.isEmpty()){
-            
-            int indexC= random.nextInt(codigos.size());
-            int codigo=codigos.get(indexC);
-            codigos.remove(indexC);
-            
-            int indexP1= random.nextInt(posiciones.size());
-            int[]posi1=posiciones.get(indexP1);
-            posiciones.remove(indexP1);
-            
-            int indexP2= random.nextInt(posiciones.size());
-            int[]posi2=posiciones.get(indexP1);
-            posiciones.remove(indexP2);
-            
-            Tarjetas btn1= new Tarjetas(codigo);
-            Tarjetas btn2= new Tarjetas(codigo);
-            listaTarjetas.add(btn1);
-            listaTarjetas.add(btn2);
-            tarjetasPane.add(btn1,posi1[0],posi1[1]);
-            tarjetasPane.add(btn2,posi2[0],posi2[1]);
-            
-            Platform.runLater(new Runnable() {
-            @Override public void run() {
-                
-            }
-            });
-            
-        }*/
-        
-        
-        
+        }   
     }
     
     public void limpiaListas(){
@@ -167,17 +99,163 @@ public class PrimaryController implements Initializable{
         Collections.shuffle(posiciones);
         
     } 
+    
+    
+    
+    public void actualizarTarjetas(Tarjetas tAdd, Tarjetas tDelete){
+        int[]posi =tDelete.getPosicion();
+        listaTarjetas.remove(tDelete);
+        listaTarjetas.add(tAdd);
+        tarjetasPane.getChildren().remove(tDelete);
+        tarjetasPane.add(tAdd, posi[0], posi[1]);
+        
+        
+    }
     /*
-    public void verificador(Tarjetas t){
-        if(selected1==null){
-            selected1=t;
-        }else{
-            selected2=t;
-            if(selected1.equals(selected2)){
-                
-            }
-        }
+    public void reLlenarGridPane(){
+        
+        tarjetasPane.getChildren().clear();
+        for(Tarjetas t: listaTarjetas){
+            int[]posi =t.getPosicion();
+            tarjetasPane.add(t, posi[0], posi[1]);
+        } 
     }*/
     
+    public final class Tarjetas extends Button {
+        private String ruta;
+        private int codigo;
+        private static final String cardBack="files/cardback.jpg";
+        private Estado estado;
+        private int[] posicion;
+
+        public Tarjetas(int c){
+            super();
+
+            ruta="files/"+c+".jpeg";
+            codigo=c;
+            this.prefHeight(50);
+            this.prefWidth(50);
+            this.setText("");
+            this.bocaAbajo();
+            this.setOnAction(eh -> {manejaBoton();});
+        }
+
+        public int[] getPosicion() {
+            return posicion;
+        }
+
+        public void setPosicion(int[] posicion) {
+            this.posicion = posicion;
+        }
+
+        public Estado getEstado() {
+            return estado;
+        }
+
+        public void setEstado(Estado estado) {
+            this.estado = estado;
+        }
+
+
+        public String getRuta() {
+            return ruta;
+        }
+
+        public void setRuta(String ruta) {
+            this.ruta = ruta;
+        }
+
+        public int getCodigo() {
+            return codigo;
+        }
+
+        public void setCodigo(int codigo) {
+            this.codigo = codigo;
+        }
+
+        public void bocaAbajo(){
+            if(this.estado==Estado.OUT)
+                return;
+
+            this.estado=Estado.OFF;
+            ImageView imgv = new ImageView();
+             try ( FileInputStream input = new FileInputStream(Tarjetas.cardBack)){
+                 Image image = new Image(input);
+                 imgv.setImage(image);
+                 this.setGraphic(imgv);
+             }catch(IOException e){
+                 System.out.println(e.getMessage());
+             }
+        }
+
+        public void bocaArriba(){
+            this.estado=Estado.ON;
+            ImageView imgv = new ImageView();
+             try ( FileInputStream input = new FileInputStream(this.ruta)){
+                 Image image = new Image(input);
+                 imgv.setImage(image);
+                 this.setGraphic(imgv);
+             }catch(IOException e){
+                 System.out.println(e.getMessage());
+             }
+        }
+
+        public void manejaBoton(){
+            if(this.estado==Estado.OUT)
+                return;
+            if(this.estado==Estado.OFF){
+                this.bocaArriba();
+                this.verificador();
+            }
+
+            if(this.estado==Estado.ON)
+                return;    
+
+            if(PrimaryController.selected1 !=null || PrimaryController.selected2 !=null){
+                this.verificador();
+            }
+        }
+
+        public void verificador(){
+            if(selected1==null){
+                selected1=this;
+            }else{
+                selected2=this;
+                if(selected1.equals(selected2)){
+                    for(Tarjetas carta: PrimaryController.listaTarjetas){
+                        if(selected1.equals(carta)){
+                            selected1.setEstado(Estado.OUT);
+                            actualizarTarjetas(selected1,carta);
+                        }
+                        if(selected2.equals(carta)){
+                            selected2.setEstado(Estado.OUT);
+                            actualizarTarjetas(selected2,carta);
+                        }  
+                    }
+                }
+                selected1=null;
+                selected2=null; 
+            }
+        }
+        /*
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Tarjetas other = (Tarjetas) obj;
+            if (this.codigo != other.codigo) {
+                return false;
+            }
+            return true;
+        }*/
+   
+    }
 }
 

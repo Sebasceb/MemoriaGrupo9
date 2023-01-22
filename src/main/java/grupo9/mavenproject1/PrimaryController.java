@@ -3,36 +3,27 @@ package grupo9.mavenproject1;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import static java.lang.Math.random;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.VBox;
 import java.util.Random;
+import javafx.application.Platform;
 
 public class PrimaryController implements Initializable{
-    public static ArrayList<Integer> codigos;
-    public static ArrayList<int[]> posiciones;
-    public static ArrayList<Tarjetas> listaTarjetas;
-   
+    public ArrayList<Integer> codigos;
+    public ArrayList<int[]> posiciones;
+    public ArrayList<Tarjetas> listaTarjetas;
+    public ArrayList<Tarjetas> Selecciones;
+    public Tarjetas selected1;
+    public Tarjetas selected2;
+    
     
     @FXML
     private GridPane tarjetasPane;
@@ -40,13 +31,15 @@ public class PrimaryController implements Initializable{
     int columnas= 6;
     int filas= 4;
     
-    public static Tarjetas selected1=null;
-    public static Tarjetas selected2=null;
+    
     
     public void initialize(URL url, ResourceBundle rb){
         codigos=new ArrayList();
         posiciones=new ArrayList();
         listaTarjetas=new ArrayList();
+        Selecciones=new ArrayList();
+        selected1=null;
+        selected2=null;
         System.out.println("Hello World");
         Runnable task2 = () -> { llenarGridPane(); };
         new Thread(task2).start();
@@ -58,7 +51,6 @@ public class PrimaryController implements Initializable{
         
         tarjetasPane.getChildren().clear();
         limpiaListas();
-        Random random = new Random();
         
         for(int c:codigos){
             
@@ -100,8 +92,55 @@ public class PrimaryController implements Initializable{
         
     } 
     
+    public void verificador(Tarjetas t){
+        Selecciones.add(t);
+        
+        if(Selecciones.size()>1){
+            
+        
+            Tarjetas seleccion1=Selecciones.get(0);
+            Tarjetas seleccion2=Selecciones.get(1);
+            if(seleccion1.getCodigo()==seleccion2.getCodigo()){
+                for(Tarjetas carta: listaTarjetas){
+                        if(seleccion1.getCodigo()==carta.getCodigo()){
+                            carta.setEstado(Estado.OUT);
+                            
+                        }
+                        if(seleccion2.getCodigo()==carta.getCodigo()){
+                            carta.setEstado(Estado.OUT);
+                        }  
+                    }
+            }else{
+                
+                Thread hilo = new Thread(() -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                
+                
+                    Platform.runLater(new Runnable() {
+                        public void run() {
+                            for(Tarjetas carta: listaTarjetas){
+                                if(seleccion1.getCodigo()==carta.getCodigo())
+                                    carta.bocaAbajo();
+                                if(seleccion2.getCodigo()==carta.getCodigo())
+                                    carta.bocaAbajo();
+                            }
+                        }
+                    });
+                });
+                hilo.start();
+                
+            }
+            Selecciones.clear();
+        }
+          
+    }
     
     
+    /*
     public void actualizarTarjetas(Tarjetas tAdd, Tarjetas tDelete){
         int[]posi =tDelete.getPosicion();
         listaTarjetas.remove(tDelete);
@@ -111,7 +150,7 @@ public class PrimaryController implements Initializable{
         tarjetasPane.add(tAdd, posi[0], posi[1]);
        
     }
-    /*
+    
     public void reLlenarGridPane(){
         
         tarjetasPane.getChildren().clear();
@@ -189,6 +228,9 @@ public class PrimaryController implements Initializable{
         }
 
         public void bocaArriba(){
+            if(this.estado==Estado.OUT)
+                return;
+            
             this.estado=Estado.ON;
             ImageView imgv = new ImageView();
              try ( FileInputStream input = new FileInputStream(this.ruta)){
@@ -201,47 +243,53 @@ public class PrimaryController implements Initializable{
         }
 
         public void manejaBoton(){
+            
         
             if(this.estado==Estado.OFF){
                 this.bocaArriba();
-                this.verificador();
+                verificador(this);
             }else
                 return;
         }
-
-        public void verificador(){
+/*
+        public void verificador(Tarjetas t){
             if(selected1==null){
-                selected1=this;
+                selected1=t;
+                int[] posi1=selected1.getPosicion();
+                System.out.println("IF"+posi1[0]+";"+posi1[1]);
+                
             }else{
-                selected2=this;
+                selected2=t;
+                int[] posi1=selected1.getPosicion();
+                System.out.println("ELSE : "+posi1[0]+";"+posi1[1]);
+                int[] posi2=selected2.getPosicion();
+                System.out.println("ELSE"+posi2[0]+posi2[1]);
                 if(selected1.equals(selected2)){
                     for(Tarjetas carta: PrimaryController.listaTarjetas){
                         if(selected1.equals(carta)){
-                            selected1.setEstado(Estado.OUT);
-                            actualizarTarjetas(selected1,carta);
+                            carta.setEstado(Estado.OUT);
+                            selected1=null;
                         }
                         if(selected2.equals(carta)){
-                            selected2.setEstado(Estado.OUT);
-                            actualizarTarjetas(selected2,carta);
+                            carta.setEstado(Estado.OUT);
+                            selected2=null;
                         }  
                     }
                 }else{
                     for(Tarjetas carta: PrimaryController.listaTarjetas){
                         if(selected1.equals(carta)){
-                            selected1.bocaAbajo();
-                            actualizarTarjetas(selected1,carta);
+                            carta.bocaAbajo();
                             selected1=null;
                         }
                         if(selected2.equals(carta)){
-                            selected2.bocaAbajo();
-                            actualizarTarjetas(selected2,carta);
+                            carta.bocaAbajo();
                             selected2=null;
                         }  
                     }
                 }
             }
         }
-        /*
+        
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {

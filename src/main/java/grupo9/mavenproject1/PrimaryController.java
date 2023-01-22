@@ -1,7 +1,6 @@
 package grupo9.mavenproject1;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import java.util.Random;
 import javafx.application.Platform;
 
 public class PrimaryController implements Initializable{
@@ -21,8 +19,9 @@ public class PrimaryController implements Initializable{
     public ArrayList<int[]> posiciones;
     public ArrayList<Tarjetas> listaTarjetas;
     public ArrayList<Tarjetas> Selecciones;
-    public Tarjetas selected1;
-    public Tarjetas selected2;
+    public boolean bandera;
+    public int aciertos;
+    public int fallas;
     
     
     @FXML
@@ -38,8 +37,8 @@ public class PrimaryController implements Initializable{
         posiciones=new ArrayList();
         listaTarjetas=new ArrayList();
         Selecciones=new ArrayList();
-        selected1=null;
-        selected2=null;
+        bandera=true;
+      
         System.out.println("Hello World");
         Runnable task2 = () -> { llenarGridPane(); };
         new Thread(task2).start();
@@ -93,72 +92,57 @@ public class PrimaryController implements Initializable{
     } 
     
     public void verificador(Tarjetas t){
-        Selecciones.add(t);
-        
-        if(Selecciones.size()>1){
-            
-        
-            Tarjetas seleccion1=Selecciones.get(0);
-            Tarjetas seleccion2=Selecciones.get(1);
-            if(seleccion1.getCodigo()==seleccion2.getCodigo()){
-                for(Tarjetas carta: listaTarjetas){
-                        if(seleccion1.getCodigo()==carta.getCodigo()){
-                            carta.setEstado(Estado.OUT);
-                            
-                        }
-                        if(seleccion2.getCodigo()==carta.getCodigo()){
-                            carta.setEstado(Estado.OUT);
-                        }  
-                    }
-            }else{
-                
-                Thread hilo = new Thread(() -> {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                
-                
-                    Platform.runLater(new Runnable() {
-                        public void run() {
-                            for(Tarjetas carta: listaTarjetas){
-                                if(seleccion1.getCodigo()==carta.getCodigo())
-                                    carta.bocaAbajo();
-                                if(seleccion2.getCodigo()==carta.getCodigo())
-                                    carta.bocaAbajo();
+        if (bandera){
+            t.bocaArriba();
+            Selecciones.add(t);
+
+            if(Selecciones.size()>1){
+
+
+                Tarjetas seleccion1=Selecciones.get(0);
+                Tarjetas seleccion2=Selecciones.get(1);
+                if(seleccion1.getCodigo()==seleccion2.getCodigo()){
+                    for(Tarjetas carta: listaTarjetas){
+                            if(seleccion1.getCodigo()==carta.getCodigo()){
+                                carta.setEstado(Estado.OUT);
+
                             }
+                            if(seleccion2.getCodigo()==carta.getCodigo()){
+                                carta.setEstado(Estado.OUT);
+                            }  
                         }
+                }else{
+
+                    Thread hilo = new Thread(() -> {
+                        bandera=false;
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                        }
+
+
+                        Platform.runLater(new Runnable() {
+                            public void run() {
+                                for(Tarjetas carta: listaTarjetas){
+                                    if(seleccion1.getCodigo()==carta.getCodigo())
+                                        carta.bocaAbajo();
+                                    if(seleccion2.getCodigo()==carta.getCodigo())
+                                        carta.bocaAbajo();
+                                }
+                            }
+                        });
+                        bandera=true;
                     });
-                });
-                hilo.start();
-                
+                    hilo.start();
+
+                }
+                Selecciones.clear();
             }
-            Selecciones.clear();
-        }
-          
+        }   
     }
     
     
-    /*
-    public void actualizarTarjetas(Tarjetas tAdd, Tarjetas tDelete){
-        int[]posi =tDelete.getPosicion();
-        listaTarjetas.remove(tDelete);
-        listaTarjetas.add(tAdd);
-        tAdd.bocaAbajo();
-        tarjetasPane.getChildren().remove(tDelete);
-        tarjetasPane.add(tAdd, posi[0], posi[1]);
-       
-    }
-    
-    public void reLlenarGridPane(){
-        
-        tarjetasPane.getChildren().clear();
-        for(Tarjetas t: listaTarjetas){
-            int[]posi =t.getPosicion();
-            tarjetasPane.add(t, posi[0], posi[1]);
-        } 
-    }*/
     
     public final class Tarjetas extends Button {
         private String ruta;
@@ -246,68 +230,12 @@ public class PrimaryController implements Initializable{
             
         
             if(this.estado==Estado.OFF){
-                this.bocaArriba();
+                
                 verificador(this);
             }else
                 return;
         }
-/*
-        public void verificador(Tarjetas t){
-            if(selected1==null){
-                selected1=t;
-                int[] posi1=selected1.getPosicion();
-                System.out.println("IF"+posi1[0]+";"+posi1[1]);
-                
-            }else{
-                selected2=t;
-                int[] posi1=selected1.getPosicion();
-                System.out.println("ELSE : "+posi1[0]+";"+posi1[1]);
-                int[] posi2=selected2.getPosicion();
-                System.out.println("ELSE"+posi2[0]+posi2[1]);
-                if(selected1.equals(selected2)){
-                    for(Tarjetas carta: PrimaryController.listaTarjetas){
-                        if(selected1.equals(carta)){
-                            carta.setEstado(Estado.OUT);
-                            selected1=null;
-                        }
-                        if(selected2.equals(carta)){
-                            carta.setEstado(Estado.OUT);
-                            selected2=null;
-                        }  
-                    }
-                }else{
-                    for(Tarjetas carta: PrimaryController.listaTarjetas){
-                        if(selected1.equals(carta)){
-                            carta.bocaAbajo();
-                            selected1=null;
-                        }
-                        if(selected2.equals(carta)){
-                            carta.bocaAbajo();
-                            selected2=null;
-                        }  
-                    }
-                }
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Tarjetas other = (Tarjetas) obj;
-            if (this.codigo != other.codigo) {
-                return false;
-            }
-            return true;
-        }*/
-   
+
     }
 }
 
